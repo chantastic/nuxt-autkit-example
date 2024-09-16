@@ -1,10 +1,28 @@
-import { defineEventHandler } from 'h3'
+import { defineEventHandler, parseCookies, sendRedirect } from 'h3'
+import { WorkOS } from '@workos-inc/node'
+import { useRuntimeConfig } from '#imports'
 
-export default defineEventHandler((event) => {
-  // Server-side authentication logic here
-  const isAuthenticated = false // ... your AuthKit authentication check
+const workos = new WorkOS(process.env.WORKOS_API_KEY)
 
-  if (!isAuthenticated && event.node.req.url !== '/login') {
-    return sendRedirect(event, '/login')
+export default defineEventHandler(async (event) => {
+  const config = useRuntimeConfig()
+  const cookies = parseCookies(event)
+  const sessionToken = cookies['workos_session_token']
+
+  // List of paths that don't require authentication
+  const publicPaths = ['/', '/sign-in']
+
+  if (!sessionToken && !publicPaths.includes(event.node.req.url)) {
+    return sendRedirect(event, '/sign-in')
+  }
+
+  if (sessionToken && !publicPaths.includes(event.node.req.url)) {
+    try {
+      await workos.userManagement.getUser(sessionToken)
+      // If we get here, the session is valid
+    } catch (error) {
+      // Invalid or expired session
+      return sendRedirect(event, '/sign-in')
+    }
   }
 })

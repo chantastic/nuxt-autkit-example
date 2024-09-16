@@ -3,16 +3,18 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
   devtools: { enabled: true },
   runtimeConfig: {
-    // Private keys that are exposed to the server
-    apiSecret: process.env.API_SECRET,
-    // Public keys that are exposed to the client
+    workosClientId: process.env.WORKOS_CLIENT_ID,
+    workosApiKey: process.env.WORKOS_API_KEY,
+    workosRedirectUri: process.env.WORKOS_REDIRECT_URI,
+    workosClientSecret: process.env.WORKOS_COOKIE_PASSWORD,
     public: {
       apiBase: process.env.API_BASE
     }
   },
   nitro: {
     routeRules: {
-      '/dashboard/**': { appMiddleware: ['auth'] }
+      // '/dashboard/**': { middleware: ['auth'] },
+      // '/profile/**': { middleware: ['auth'] }
     }
   }
 })
